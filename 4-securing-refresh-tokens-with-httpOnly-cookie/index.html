@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTTP-only Cookie Test</title>
+</head>
+<body>
+    <h1>HTTP-only Cookie Test</h1>
+
+    <button id="loginButton">Login</button>
+    <button id="refreshTokenButton">Refresh Token</button>
+    <button id="getPostsButton">Get Posts</button>
+
+    <script>
+        let accessToken;  // Variable to store the access token
+
+        const loginButton = document.getElementById('loginButton');
+        const refreshTokenButton = document.getElementById('refreshTokenButton');
+        const getPostsButton = document.getElementById('getPostsButton');
+
+        loginButton.addEventListener('click', async () => {
+            // Simulate a login request to obtain access and refresh tokens
+            const response = await fetch('http://localhost:3000/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    username: 'your_username',
+                    password: 'your_password',
+                }),
+            });
+
+            const data = await response.json();
+            console.log('Login Response:', data);
+
+            // Store the access token for later use
+            accessToken = data.accessToken;
+        });
+
+        refreshTokenButton.addEventListener('click', async () => {
+            try {
+                // Simulate a refresh token request
+                const response = await fetch('http://localhost:3000/refresh', {
+                    method: 'POST',
+                    credentials: 'include', // Include cookies in the request
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error('Refresh Token Error:', errorData);
+                    return;
+                }
+
+                const data = await response.json();
+                console.log('Refresh Token Response:', data);
+            } catch (error) {
+                console.error('An error occurred during refresh token request:', error);
+            }
+        });
+
+        getPostsButton.addEventListener('click', async () => {
+            if (!accessToken) {
+                console.error('Access token not available. Please login first.');
+                return;
+            }
+
+            // Simulate a request to get posts (protected route) with the stored access token
+            const response = await fetch('http://localhost:3000/posts', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                },
+                credentials: 'include', // Include cookies in the request
+            });
+
+            const data = await response.json();
+            console.log('Get Posts Response:', data);
+        });
+    </script>
+</body>
+</html>

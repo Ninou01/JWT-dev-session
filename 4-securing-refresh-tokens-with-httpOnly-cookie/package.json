@@ -1,5 +1,5 @@
 {
-  "name": "jwt",
+  "name": "4-securing-refresh-tokens-with-httponly-cookie",
   "version": "1.0.0",
   "description": "",
   "main": "app.js",
