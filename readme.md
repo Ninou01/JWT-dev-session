@@ -53,7 +53,7 @@ Without the need to store session information on the server, token-based authent
 2. Install dependencies:
 
    ```bash
-   npm install express nodemon dotenv jsonwebtoken
+   npm install express nodemon dotenv jsonwebtoken cookie-parser
    ```
 
 3. Create a `.env` file in the root directory and add your environment variables:
@@ -65,7 +65,7 @@ Without the need to store session information on the server, token-based authent
 
 4. Configure your script in your **package.json** file:
 
-   ```env
+   ```js
    ...
    "scripts": {
         "dev": "nodemon app.js"
@@ -100,13 +100,13 @@ Generated jwts will include an **iat** (issued at) claim by default
 
 ```js
 var jwt = require('jsonwebtoken');
-var accessToken = jwt.sign({ foo: 'bar' }, 'shhhhh', { expiresIn: '1h' });
+var accessToken = jwt.sign({ foo: 'bar' }, 'secretkey', { expiresIn: '1h' });
 ```
 or
 ```js
 var jwt = require('jsonwebtoken');
 var accessToken;
-jwt.sign({ foo: 'bar' }, privateKey, { algorithm: 'RS256' }, function(err, token) {
+jwt.sign({ foo: 'bar' }, 'secretkey', { algorithm: 'RS256' }, function(err, token) {
   accessToken = token;
 });
 ```
@@ -116,20 +116,39 @@ like **sign** function, it accepts two required parameters and two other optiona
 **options** are slightly different then the one in **sign** so it's better to check the [documentation](https://www.npmjs.com/package/jsonwebtoken#algorithms-supported) for more infos 
 ```js
 try {
-  var decodedPayload = jwt.verify(token, 'wrong-secret');
+  var decodedPayload = jwt.verify(token, 'secretkey');
 } catch(err) {
   // err
 }
 ```
 ```js
 var decodedPayload;
-jwt.verify(token, 'shhhhh', function(err, decoded) {
+jwt.verify(token, 'secretkey', function(err, decoded) {
   ...
   decodedPayload = decoded
 });
 ```
 
+## Refresh Tokens and XSS Attacks
+**XSS**: an XSS attack happen when some undesirable code is being executed within your website. This can be as gentle as a console.log, but could go as far as stealing informations, our JWT for example.
 
+a solution for this is to set the refresh token as an HTTP-only cookie, which are acceded by the accessed.
+
+**Browser Cookie:** Small data stored by a browser, containing website information for session and tracking.
+
+**HttpOnly Cookie:** Secure browser cookie accessed and modified only by the server, enhancing protection against unauthorized access.
+
+_HTTP-only cookies protect against XSS attacks by preventing client-side JavaScript from accessing the cookie values._
+
+## Handling Tokens After User Logout:
+
+After a user logs out of the app, various strategies can be employed to manage their tokens. One common approach is to store the token in a blacklist if it's still valid, preventing any further usage.
+
+To enhance this strategy and align with the statelessness principle of **JWT**, an in-memory database is often used. This database provides quick access and operates with low overhead, improving the overall efficiency of the process.
+
+exemple of that: 
+
+![redis logo](./images/Redis_logo_PNG1.png)
 
 
 
